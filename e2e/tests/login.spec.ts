@@ -1,15 +1,19 @@
 import { test, expect } from "@playwright/test";
 
-
+import LoginPage from "../pom/login";
 test.describe("Login page", () => {
+
+    const email: string = "oliver@example.com";
+    const password: string = "welcome";
+    const username: string = "Oliver Smith";
     test("should login to home page", async ({ page }) => {
-        await page.goto("https://neeto-form-web-playwright.neetodeployapp.com/")
 
-        await page.locator('[data-test-id="login-email"]').fill("oliver@example.com");
-        await page.locator('[data-test-id="login-password"]').fill('welcome');
+        const loginPage = new LoginPage(page);
 
-        await page.locator('[data-test-id="login-submit-button"]').click();
-        await expect(page.getByRole('button', { name: 'avatar-Oliver Smith' })).toBeVisible();
-
+        await loginPage.loginAndVerifyUser({
+            email,
+            password,
+            username
+        });
     });
 })
