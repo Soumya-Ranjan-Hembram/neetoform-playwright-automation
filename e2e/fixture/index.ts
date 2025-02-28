@@ -3,6 +3,7 @@ import LoginPage from "../pom/login";
 
 interface ExtendedFixtures {
     loginPage: LoginPage;
+
 }
 
 export const test = base.extend<ExtendedFixtures>({
