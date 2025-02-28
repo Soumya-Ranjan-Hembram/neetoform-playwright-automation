@@ -7,6 +7,7 @@ test.describe("Login page", () => {
     const password: string = "welcome";
     const username: string = "Oliver Smith";
     test("should login to home page", async ({ page, loginPage }) => {
+        page.goto("/")
         await loginPage.loginAndVerifyUser({
             email,
             password,
