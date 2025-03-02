@@ -62,7 +62,7 @@ test.describe('Form page', () => {
                 lastName,
                 email,
                 phoneNumber
-            }); 
+            });
             await previewPage.close();
 
         });
@@ -117,6 +117,50 @@ test.describe('Form page', () => {
         });
     });
 
+
+    test('should verify form insights', async ({
+        page,
+        context,
+        formPage,
+    }) => {
+
+        let previewPage;
+        await test.step("Step 1: Create a new form and update name", async () => {
+
+            await formPage.createNewForm();
+            await formPage.updateFormName({ formName });
+
+        });
+        await test.step("Step 2: Publish form and goto analytics page", async () => {
+
+            await formPage.publishForm();
+            await formPage.gotoAnalyticsTab();
+
+        });
+
+        await test.step("Step 3: visit preview page and check the visits count", async () => {
+            await formPage.verifyInitialInsights();
+            await formPage.gotoBuildTab();
+
+
+            previewPage = await formPage.openPublishedForm(context);
+            await formPage.visitPreviewPageAndVerifyEmailField(previewPage);
+
+        });
+
+        await test.step("Step 4: verify count increments", async () => {
+
+            await formPage.verifyVisitCountIncrease(context);
+            await formPage.verifyStartCountIncrease(context);
+
+        });
+
+        await test.step("Step 5: verify submission count increment", async () => {
+
+            await formPage.verifySubmissionCountIncrease(context);
+        });
+
+    });
 
 
 })

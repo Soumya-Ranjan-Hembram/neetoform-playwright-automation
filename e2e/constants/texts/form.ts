@@ -3,6 +3,8 @@ export const FORM_TEXTS = {
     // Test data
     falseEmail: "soumya",
     unUseNumber: "1",
+    simpleEmail: "soumya@example.com",
+
 
     // Success messages
     theFormPublishedSuccessfully: "The form is successfully published",
