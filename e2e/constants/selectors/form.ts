@@ -76,4 +76,11 @@ export const FORM_SELECTORS = {
     passwordProtedPageHeading: 'password-protected-heading',
     passwordTextField: 'password-text-field',
     continueButton: 'continue-button',
+
+
+    //duplicate submission
+    preventDuplicateSubmission: 'settings-item-prevent-duplicate-submissions',
+    preventDuplicateSaveChangeButton: 'save-changes-button',
+    cookieRadio: 'cookie-track-radio-item',
+    noTrackRadio: 'no-track-radio-item',
 }

@@ -172,19 +172,19 @@ test.describe('Form page', () => {
         await test.step('Step 1: Creat a new form and publish it.', async () => {
             await formPage.createNewForm();
             await formPage.publishForm();
-        })
+        });
 
         await test.step("Step 2: navigate to the configure tab and click on access control.", async () => {
             await formPage.gotoSettingTab();
             await formPage.clickOnAccessControl();
-        })
+        });
         await test.step("Step 3: Select and check the password option.", async () => {
             await formPage.choosePasswordOption();
             await formPage.checkAccessPasswordWorkingProperly();
-        })
+        });
         await test.step("Step 4: Enter password an save change", async () => {
             await formPage.enterAccessPasswordAndSaveChange();
-        })
+        });
         await test.step('Step 5: Open Form in incognito, verify the form is password protected and submit response', async () => {
             const incognitoUserContext = await browser.newContext({
                 storageState: { cookies: [], origins: [] },
@@ -198,6 +198,55 @@ test.describe('Form page', () => {
 
             await formPage.verifyThePasswordProtectedForm(incognitoUserPage);
             await formPage.submitAndVerifyTheResponse(incognitoUserPage);
-        })
+        });
     });
+
+    test('should have unique submission', async ({
+        page,
+        context,
+        browser,
+        formPage
+    }) => {
+        await test.step('Step 1: Creat a new form and publish it.', async () => {
+            await formPage.createNewForm();
+            await formPage.publishForm();
+        });
+
+        await test.step("Step 2: navigate to the configure tab and click on unique submission.", async () => {
+            await formPage.gotoSettingTab();
+            await formPage.clickOnPreventDuplicateSubmission();
+        });
+
+        await test.step("Step 3: Check use cookies option", async () => {
+            await formPage.choosePreventDuplicateSubmission()
+        })
+
+        await test.step("Step 4: Check use cookies option", async () => {
+            const preventDuplicateSubmissionPreviewPage = await formPage.openPublishedForm(context);
+
+            await formPage.validateThatOneCannotSubmitResponseTwice(preventDuplicateSubmissionPreviewPage, context)
+        });
+
+        await test.step("Step 5: Check can we able to visit the site using different cookie.", async () => {
+
+            const incognitoUserContext = await browser.newContext({
+                storageState: { cookies: [], origins: [] },
+            });
+
+            const incognitoUserPage = await incognitoUserContext.newPage();
+
+            await formPage.gotoShareTab();
+            await formPage.getTheShareLink(context);
+            await formPage.openFormWithDifferentCookie(incognitoUserPage);
+        });
+
+        await test.step("Step 6: Check no check option and ensure multiple submission using same cookie.", async () => {
+            await formPage.chooseNoCheckOption()
+            const allowDuplicateSubmissionPreviewPage = await formPage.openPublishedForm(context);
+            await formPage.validateThatOneCanSubmitMultipleResponse(allowDuplicateSubmissionPreviewPage, context);
+            const allowDuplicateSubmissionPreviewPage2 = await formPage.openPublishedForm(context);
+            await formPage.validateThatOneCanSubmitMultipleResponse(allowDuplicateSubmissionPreviewPage2, context);
+        });
+
+    })
 });

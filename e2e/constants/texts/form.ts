@@ -5,6 +5,7 @@ export const FORM_TEXTS = {
     unUseNumber: "1",
     simpleEmail: "soumya@example.com",
     passwordChecker: "qwe",
+    simpleEmail2: "sanat@example.com",
     accessingPassword: "123456",
 
     // Success messages
