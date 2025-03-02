@@ -45,19 +45,26 @@ test.describe('Form page', () => {
             previewPage = await formPage.openPublishedForm(context);
 
             await formPage.verifyFields(previewPage);
+            await previewPage.close();
+
         });
 
         await test.step("Step 5: Validate field errors", async () => {
+            previewPage = await formPage.openPublishedForm(context);
             await formPage.validateFieldErrors(previewPage);
+            await previewPage.close();
         });
 
         await test.step("Step 6: Fill and submit the form", async () => {
+            previewPage = await formPage.openPublishedForm(context);
             await formPage.fillAndSubmitForm(previewPage, {
                 firstName,
                 lastName,
                 email,
                 phoneNumber
-            });
+            }); 
+            await previewPage.close();
+
         });
 
         await test.step("Step 7: Validate submission fields", async () => {
@@ -67,5 +74,49 @@ test.describe('Form page', () => {
             );
         });
     });
+
+
+    test("should customize form's field elements", async ({ page, context, formPage }) => {
+        await test.step("Step 1: Create a new form and update name", async () => {
+            await formPage.createNewForm();
+            await formPage.updateFormName({ formName });
+        });
+
+        await test.step("Step 2: Add single and multi-choice elements", async () => {
+            await formPage.addSingleChoiceElement();
+            await formPage.addMultiChoiceElement();
+        });
+
+        await test.step("Step 3: Add six more options and randomize single choice", async () => {
+            await formPage.addBulkOptionsToElements();
+            await formPage.hideMultiChoiceElement();
+        });
+
+        await test.step("Step 4: Hide multi-choice element and publish form", async () => {
+            await formPage.addRandomizationToSingleChoice();
+            await formPage.publishForm();
+        });
+
+        await test.step("Step 5: Verify hidden and randomized elements", async () => {
+            const previewPage = await formPage.openPublishedForm(context);
+            await formPage.validateSingleChoiceIsRandomized(previewPage)
+            await formPage.validateMultipleIsHiddenAndSingleIsVisible(previewPage);
+            await previewPage.close();
+
+        });
+
+        await test.step("Step 6: Unhide multi-choice element and republish", async () => {
+            await formPage.unhideMultiChoiceElement();
+            await formPage.publishForm();
+        });
+
+        await test.step("Step 7: Verify both fields are visible in published form", async () => {
+            const previewPage = await formPage.openPublishedForm(context);
+            await formPage.validateBothMultipleAndSingleIsVisible(previewPage);
+            await previewPage.close()
+        });
+    });
+
+
 
 })

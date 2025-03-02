@@ -17,6 +17,8 @@ export const FORM_SELECTORS = {
     fullNamePreview: "full-name-preview-group",
     phoneNumberElement: "add-phone-number-element",
     phoneNumberPreview: "phone-preview-group",
+    singleChoiceElement: "add-single-choice-element",
+    multiChoiceElement: "add-multi-choice-element",
 
     // Preview fields
     previewEmailTextField: "email-text-field",
@@ -25,10 +27,25 @@ export const FORM_SELECTORS = {
     previewPhoneNumberInputField: "phone-number-input-field",
     previewSubmitButton: "start-or-submit-button",
 
+    // Choice options
+    choicePreviewGroup: "multiple-choice-preview-group",
+    singleChoiceContainer: "single-choice-options-container",
+    multiChoiceContainer: "multi-choice-options-container",
+    contentTextField: "content-text-field",
+    addBulkOptionLink: "add-bulk-option-link",
+    bulkOptionsTextArea: "bulk-add-options-textarea",
+    bulkOptionsDoneButton: "bulk-add-options-done-button",
+    randomizeSwitchLabel: "randomize-switch-label",
+
+
 
     // Feedback and notifications
     thankYouMessage: "thank-you-page-message",
     toastContainer: "toastr-success-container",
+    randomizeWarningError: "randomized-warning-error-text",
+    questionHideToggle: "hide-question-toggle-label",
+    questionHideWarning: "hide-question-error-text",
+
 
     // Navigation and tabs
     submissionTab: "submissions-tab",

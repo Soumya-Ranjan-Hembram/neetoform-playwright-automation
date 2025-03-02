@@ -9,6 +9,11 @@ interface FormName {
 
 export default class FormPage {
     page: Page;
+
+    originalOptions: string;
+    randomizedOptions: string;
+
+
     constructor(page: Page) {
         this.page = page;
     };
@@ -123,9 +128,12 @@ export default class FormPage {
         await expect(previewPage.getByTestId(FORM_SELECTORS.thankYouMessage)).toBeVisible();
         await expect(previewPage.getByText(FORM_TEXTS.thankYou)).toBeVisible();
         await expect(previewPage.getByText(FORM_TEXTS.responseReceived)).toBeVisible();
-
-        await previewPage.close();
     };
+
+    visitPreviewPageAndVerifyEmailField = async (previewPage: Page) => {
+        const emailInputField = previewPage.getByTestId(FORM_SELECTORS.previewEmailTextField);
+        await expect(emailInputField).toBeVisible();
+    }
 
     validateTheSubmissionFields = async ({ formName }: FormName, {
         firstName,
@@ -141,4 +149,119 @@ export default class FormPage {
         await expect(this.page.getByText(email)).toBeVisible();
         await this.page.close();
     };
+
+
+    addSingleChoiceElement = async () => {
+        await expect(this.page.getByTestId(FORM_SELECTORS.elementContainer)).toBeVisible({ timeout: 30000 });
+        await expect(this.page.getByTestId(FORM_SELECTORS.publishButton)).toBeVisible({ timeout: 30000 });
+
+        await this.page.getByTestId(FORM_SELECTORS.singleChoiceElement).click();
+        await expect(this.page.getByTestId(FORM_SELECTORS.choicePreviewGroup).filter({ has: this.page.getByTestId(FORM_SELECTORS.singleChoiceContainer) })).toBeVisible();
+    };
+
+    addMultiChoiceElement = async () => {
+        await expect(this.page.getByTestId(FORM_SELECTORS.elementContainer)).toBeVisible({ timeout: 30000 });
+        await expect(this.page.getByTestId(FORM_SELECTORS.publishButton)).toBeVisible({ timeout: 30000 });
+
+        await this.page.getByTestId(FORM_SELECTORS.multiChoiceElement).click();
+        await expect(this.page.getByTestId(FORM_SELECTORS.choicePreviewGroup).filter({ has: this.page.getByTestId(FORM_SELECTORS.multiChoiceContainer) })).toBeVisible();
+    };
+
+    addBulkOptionsToElements = async () => {
+        const singleChoicePreviewComponent = this.page
+            .getByTestId(FORM_SELECTORS.choicePreviewGroup)
+            .filter({ has: this.page.getByTestId(FORM_SELECTORS.singleChoiceContainer) });
+
+        const multiChoicePreviewComponent = this.page
+            .getByTestId(FORM_SELECTORS.choicePreviewGroup)
+            .filter({ has: this.page.getByTestId(FORM_SELECTORS.multiChoiceContainer) });
+
+
+        await expect(singleChoicePreviewComponent).toBeVisible();
+        await expect(multiChoicePreviewComponent).toBeVisible();
+
+        await this.addBulkOptions(singleChoicePreviewComponent, FORM_TEXTS.singleDemoFieldName);
+        await this.addBulkOptions(multiChoicePreviewComponent, FORM_TEXTS.multiDemoFieldName);
+    };
+
+    addBulkOptions = async (choiceElement, fieldName) => {
+        await choiceElement.click();
+        await this.page.getByTestId(FORM_SELECTORS.contentTextField).fill(fieldName);
+        await this.page.getByTestId(FORM_SELECTORS.addBulkOptionLink).click();
+
+        await expect(this.page.getByTestId(FORM_SELECTORS.bulkOptionsTextArea)).toBeVisible();
+        await expect(this.page.getByTestId(FORM_SELECTORS.bulkOptionsDoneButton)).toBeVisible();
+
+        await this.page.getByTestId(FORM_SELECTORS.bulkOptionsTextArea).fill("Option 5, Option 6, Option 7, Option 8, Option 9, Option 10");
+        await this.page.getByTestId(FORM_SELECTORS.bulkOptionsDoneButton).click();
+        await this.page.waitForTimeout(2000);
+    };
+
+    enableRandomization = async (choiceElement) => {
+        await choiceElement.click();
+        await this.page.getByTestId(FORM_SELECTORS.randomizeSwitchLabel).click();
+
+        const warningText = await this.page.getByTestId(FORM_SELECTORS.randomizeWarningError).textContent();
+        expect(warningText?.trim()).toBe(FORM_TEXTS.waringTextRandomization);
+    };
+
+
+    addRandomizationToSingleChoice = async () => {
+        const singleChoicePreviewComponent = this.page.getByTestId(FORM_SELECTORS.choicePreviewGroup).filter({ has: this.page.getByTestId(FORM_SELECTORS.singleChoiceContainer) });
+
+        await this.enableRandomization(singleChoicePreviewComponent);
+
+
+        const original = await this.page.getByTestId('single-choice-options-container').allInnerTexts();
+
+        this.originalOptions = await JSON.stringify(original);
+
+        console.log(this.originalOptions);
+    };
+
+
+    hideMultiChoiceElement = async () => {
+        const multiChoicePreviewComponent = this.page.getByTestId(FORM_SELECTORS.choicePreviewGroup).filter({ has: this.page.getByTestId(FORM_SELECTORS.multiChoiceContainer) });
+
+        await multiChoicePreviewComponent.click();
+        await this.page.getByTestId(FORM_SELECTORS.questionHideToggle).click();
+
+        const warningMessage = await this.page.getByTestId(FORM_SELECTORS.questionHideWarning).textContent();
+        expect(warningMessage?.trim()).toBe(FORM_TEXTS.questionHideWaringMessage)
+
+        await this.page.waitForTimeout(1000);
+    };
+
+    unhideMultiChoiceElement = async () => {
+        const multiChoicePreviewComponent = this.page.getByTestId(FORM_SELECTORS.choicePreviewGroup).filter({ has: this.page.getByTestId(FORM_SELECTORS.multiChoiceContainer) });
+
+        await multiChoicePreviewComponent.click();
+        await this.page.getByTestId(FORM_SELECTORS.questionHideToggle).click();
+    };
+
+
+
+    validateMultipleIsHiddenAndSingleIsVisible = async (previewPage: Page) => {
+
+        await expect(previewPage.getByText(FORM_TEXTS.singleDemoFieldImportant)).toBeVisible();
+
+        await expect(previewPage.getByText(FORM_TEXTS.multiDemoFieldImportant)).not.toBeVisible({ timeout: 10000 });
+    }
+
+    validateSingleChoiceIsRandomized = async (previewPage: Page) => {
+
+        const previewPageSingleChoiceList = await previewPage.getByTestId('single-choice-options-container').allInnerTexts()
+        this.randomizedOptions = JSON.stringify(previewPageSingleChoiceList);
+        console.log(this.randomizedOptions);
+        await expect(this.randomizedOptions).not.toBe(this.originalOptions)
+    }
+
+    validateBothMultipleAndSingleIsVisible = async (previewPage) => {
+
+        await expect(previewPage.getByText(FORM_TEXTS.singleDemoFieldImportant)).toBeVisible();
+
+        await expect(previewPage.getByText(FORM_TEXTS.multiDemoFieldImportant)).toBeVisible();
+
+    };
+
 };
