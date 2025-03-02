@@ -26,6 +26,8 @@ export const FORM_SELECTORS = {
     previewLastNameTextField: 'last-name-text-field',
     previewPhoneNumberInputField: 'phone-number-input-field',
     previewSubmitButton: 'start-or-submit-button',
+    previewThankYouMessage: 'thank-you-page-message',
+
 
     // Choice options
     choicePreviewGroup: 'multiple-choice-preview-group',
@@ -50,6 +52,7 @@ export const FORM_SELECTORS = {
     analyticsTab: "analytics-more-tab",
     buildTab: "build-tab",
     settingTab: "settings-tab",
+    shareTab: 'share-tab',
 
     // Analytics and insights
     insightCount: "insights-count",
@@ -58,4 +61,19 @@ export const FORM_SELECTORS = {
     startMetric: "starts-metric",
     submissionMetric: "submissions-metric",
     completionRateMetric: "completion-rate-metric",
+
+
+    // Settings
+    accessControl: "settings-item-access-control",
+    accessPasswordRadioInput: 'access-control-password-protected-radio-input',
+    accessPasswordInputField: 'password-input-field',
+    accessPasswordInputWarning: 'password-input-error',
+    accessPasswordSaveButton: 'save-changes-button',
+
+    // share
+    shareNeetoHeading: 'share-your-neeto-form-heading',
+    linkCopyButton: 'link-copy-button',
+    passwordProtedPageHeading: 'password-protected-heading',
+    passwordTextField: 'password-text-field',
+    continueButton: 'continue-button',
 }

@@ -4,7 +4,8 @@ export const FORM_TEXTS = {
     falseEmail: "soumya",
     unUseNumber: "1",
     simpleEmail: "soumya@example.com",
-
+    passwordChecker: "qwe",
+    accessingPassword: "123456",
 
     // Success messages
     theFormPublishedSuccessfully: "The form is successfully published",

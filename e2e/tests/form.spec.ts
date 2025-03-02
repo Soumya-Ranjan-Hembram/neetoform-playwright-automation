@@ -163,4 +163,41 @@ test.describe('Form page', () => {
     });
 
 
-})
+    test('should test access controll feature of the form', async ({
+        page,
+        context,
+        browser,
+        formPage
+    }) => {
+        await test.step('Step 1: Creat a new form and publish it.', async () => {
+            await formPage.createNewForm();
+            await formPage.publishForm();
+        })
+
+        await test.step("Step 2: navigate to the configure tab and click on access control.", async () => {
+            await formPage.gotoSettingTab();
+            await formPage.clickOnAccessControl();
+        })
+        await test.step("Step 3: Select and check the password option.", async () => {
+            await formPage.choosePasswordOption();
+            await formPage.checkAccessPasswordWorkingProperly();
+        })
+        await test.step("Step 4: Enter password an save change", async () => {
+            await formPage.enterAccessPasswordAndSaveChange();
+        })
+        await test.step('Step 5: Open Form in incognito, verify the form is password protected and submit response', async () => {
+            const incognitoUserContext = await browser.newContext({
+                storageState: { cookies: [], origins: [] },
+            });
+
+            const incognitoUserPage = await incognitoUserContext.newPage();
+
+            await formPage.gotoShareTab();
+
+            await formPage.getTheShareLink(context);
+
+            await formPage.verifyThePasswordProtectedForm(incognitoUserPage);
+            await formPage.submitAndVerifyTheResponse(incognitoUserPage);
+        })
+    });
+});
