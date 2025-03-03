@@ -1,4 +1,5 @@
 export const FORM_SELECTORS = {
+
     // Form creation and management
     addFormButton: 'add-form-button',
     startFromScratch: 'start-from-scratch-button',
@@ -19,6 +20,18 @@ export const FORM_SELECTORS = {
     singleChoiceElement: 'add-single-choice-element',
     multiChoiceElement: 'add-multi-choice-element',
     singleChoiceOptionContainer: 'single-choice-options-container',
+    formGroupQuestion: 'form-group-question',
+    summaryButton: 'cancel-button',
+    newElementField: 'new-element-field',
+    addElementButton: 'add-element-button',
+    elementTitle: 'elements-title',
+    choiceOptionCard: 'choices-options-card',
+    optionInput3: 'option-input-3',
+    deleteOptionButton3: 'delete-option-button-3',
+    deleteOptionButton2: 'delete-option-button-2',
+    optionInput2: 'option-input-2',
+    optionInput1: 'option-input-1',
+    optionInput0: 'option-input-0',
 
     // Preview fields
     previewEmailTextField: 'email-text-field',
@@ -53,6 +66,8 @@ export const FORM_SELECTORS = {
     buildTab: "build-tab",
     settingTab: "settings-tab",
     shareTab: 'share-tab',
+    conditionalLogic: 'settings-item-conditional-logic',
+
 
     // Analytics and insights
     insightCount: "insights-count",
@@ -68,7 +83,20 @@ export const FORM_SELECTORS = {
     accessPasswordRadioInput: 'access-control-password-protected-radio-input',
     accessPasswordInputField: 'password-input-field',
     accessPasswordInputWarning: 'password-input-error',
-    accessPasswordSaveButton: 'save-changes-button',
+
+    saveChangeButton: 'save-changes-button',
+
+    conditionQuestionSelectInput: 'condition-question-select-input',
+    conditionVerbSelectInput: 'condition-verb-select-input',
+    conditionValueSelectInput: 'condition-value-select-input',
+    actionTypeSelectInput: 'action-type-select-input',
+    actionFieldSelectInput: 'action-field-select-input',
+
+    conditionaLogicButton: 'conditions-new-button',
+    formSingleChoiceOption: 'form-single-choice-option',
+
+    conditionLogicDropdown: 'conditional-logic-dropdown',
+    conditionsDisableButton: 'conditions-Disable-button',
 
     // share
     shareNeetoHeading: 'share-your-neeto-form-heading',

@@ -1,6 +1,7 @@
 import { expect } from "@playwright/test";
 import { test } from "../fixture";
 import { faker } from "@faker-js/faker";
+import { FORM_TEXTS } from "../constants/texts/form";
 test.describe('Form page', () => {
     let formName: string;
     let firstName: string;
@@ -21,10 +22,10 @@ test.describe('Form page', () => {
     });
 
     test.afterEach(async ({ page }) => {
-        await page.close();
+
     });
 
-    test("should create and submit a form", async ({ page, context, formPage }) => {
+    test("should create and submit a form.", async ({ page, context, formPage }) => {
         let previewPage;
 
         await test.step("Step 1: Clicked on add new form", async () => {
@@ -76,7 +77,7 @@ test.describe('Form page', () => {
     });
 
 
-    test("should customize form's field elements", async ({ page, context, formPage }) => {
+    test("should customize form's field elements.", async ({ page, context, formPage }) => {
         await test.step("Step 1: Create a new form and update name", async () => {
             await formPage.createNewForm();
             await formPage.updateFormName({ formName });
@@ -118,7 +119,7 @@ test.describe('Form page', () => {
     });
 
 
-    test('should verify form insights', async ({
+    test('should verify form insights.', async ({
         page,
         context,
         formPage,
@@ -163,7 +164,7 @@ test.describe('Form page', () => {
     });
 
 
-    test('should test access controll feature of the form', async ({
+    test('should test access controll feature of the form.', async ({
         page,
         context,
         browser,
@@ -171,6 +172,7 @@ test.describe('Form page', () => {
     }) => {
         await test.step('Step 1: Creat a new form and publish it.', async () => {
             await formPage.createNewForm();
+            await formPage.updateFormName({ formName });
             await formPage.publishForm();
         });
 
@@ -201,14 +203,15 @@ test.describe('Form page', () => {
         });
     });
 
-    test('should have unique submission', async ({
+    test('should have unique submission.', async ({
         page,
         context,
         browser,
         formPage
     }) => {
-        await test.step('Step 1: Creat a new form and publish it.', async () => {
+        await test.step('Step 1: Create a new form and publish it.', async () => {
             await formPage.createNewForm();
+            await formPage.updateFormName({ formName });
             await formPage.publishForm();
         });
 
@@ -249,4 +252,64 @@ test.describe('Form page', () => {
         });
 
     })
+
+
+    test('should have conditional logic.', async ({
+        page,
+        context,
+        browser,
+        formPage
+    }) => {
+
+        let previewPage;
+        await test.step('Step 1: Create a new form with single choice element', async () => {
+            await formPage.createNewForm();
+            await formPage.updateFormName({ formName });
+            await formPage.addSingleChoiceElement()
+        });
+
+        await test.step('Step 2: Make the single choice element as the first element and email as the second element.', async () => {
+            await formPage.changeSingleChoiceFieldName(FORM_TEXTS.interestedInPlaywright);
+            await formPage.makeSingleChoiceFirst(FORM_TEXTS.interestedInPlaywright);
+        });
+
+        await test.step('Step 3: Modify the option of single choice field such that it only conatain 2 options.', async () => {
+            await formPage.modifyAndAddYesNoOption(FORM_TEXTS.interestedInPlaywright);
+        });
+
+        await test.step('Step 4: Navigate to configure tab and select Conditional login card.', async () => {
+            await formPage.gotoSettingTab();
+            await formPage.clickOnConditionalLogic();
+        });
+
+        await test.step('Test 5: Add a new conditional logic such that when one option of the single choice element is chosen,the email address will be shown', async () => {
+            await formPage.addNewConditionalLogic();
+            await formPage.addCondition();
+        });
+
+        await test.step('Test 6: Save the changes and Publish form', async () => {
+            await formPage.saveConditionalLogicChange();
+            await formPage.publishForm();
+        });
+
+        await test.step('Test 7:Verify in the publihsed form, the email addres field is shown only when the configured optin is chosen.', async () => {
+            previewPage = await formPage.openPublishedForm(context);
+
+            await formPage.verifyConditionFunctionality(previewPage);
+
+            await previewPage.close();
+        })
+
+        await test.step('Step 8: Disable the conditional logic and verify that both field are always visible regardless of the option chosen.', async () => {
+            await formPage.gotoSettingTab();
+            await formPage.clickOnConditionalLogic();
+            await formPage.clickConditionLogicOptions();
+            previewPage = await formPage.openPublishedForm(context);
+
+            await formPage.verifyConditionLogicIsDisabled(previewPage);
+
+            await previewPage.close();
+        })
+
+    });
 });
