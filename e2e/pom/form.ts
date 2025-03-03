@@ -19,6 +19,7 @@ export default class FormPage {
     submissionCount: number = 0;
     completionRate: number = 0;
 
+    copyLink: string = "";
     constructor(page: Page) {
         this.page = page;
     };
@@ -29,8 +30,8 @@ export default class FormPage {
     getCompletionRate = () => {
         if (this.submissionCount === 0) return this.completionRate = 0;
 
-        this.completionRate = ((this.submissionCount / this.startCount) * 100)
-    }
+        this.completionRate = ((this.submissionCount / this.startCount) * 100);
+    };
 
 
 
@@ -149,7 +150,7 @@ export default class FormPage {
     visitPreviewPageAndVerifyEmailField = async (previewPage: Page) => {
         const emailInputField = previewPage.getByTestId(FORM_SELECTORS.previewEmailTextField);
         await expect(emailInputField).toBeVisible();
-    }
+    };
 
     validateTheSubmissionFields = async ({ formName }: FormName, {
         firstName,
@@ -183,6 +184,12 @@ export default class FormPage {
         await expect(this.page.getByTestId(FORM_SELECTORS.choicePreviewGroup).filter({ has: this.page.getByTestId(FORM_SELECTORS.multiChoiceContainer) })).toBeVisible();
     };
 
+    changeTheQuestion = async (choiceElement, question: string) => {
+        await choiceElement.click();
+        await this.page.getByTestId(FORM_SELECTORS.contentTextField).fill(question);
+    }
+
+
     addBulkOptionsToElements = async () => {
         const singleChoicePreviewComponent = this.page
             .getByTestId(FORM_SELECTORS.choicePreviewGroup)
@@ -201,8 +208,8 @@ export default class FormPage {
     };
 
     addBulkOptions = async (choiceElement, fieldName) => {
-        await choiceElement.click();
-        await this.page.getByTestId(FORM_SELECTORS.contentTextField).fill(fieldName);
+
+        this.changeTheQuestion(choiceElement, fieldName);
         await this.page.getByTestId(FORM_SELECTORS.addBulkOptionLink).click();
 
         await expect(this.page.getByTestId(FORM_SELECTORS.bulkOptionsTextArea)).toBeVisible();
@@ -366,4 +373,261 @@ export default class FormPage {
         expect(submissionCount).toBe(String(this.submissionCount));
         expect(completionRate).toBe(String(this.completionRate) + "%");
     };
+
+
+    gotoSettingTab = async () => {
+        await this.page.getByTestId(FORM_SELECTORS.settingTab).click();
+        await expect(this.page.getByTestId(FORM_SELECTORS.accessControl)).toBeVisible();
+    };
+
+    clickOnAccessControl = async () => {
+        await expect(this.page.getByTestId(FORM_SELECTORS.accessControl)).toBeVisible();
+        await this.page.getByTestId(FORM_SELECTORS.accessControl).click();
+        await expect(this.page.getByTestId(FORM_SELECTORS.accessPasswordRadioInput)).toBeVisible();
+    };
+
+    choosePasswordOption = async () => {
+        await expect(this.page.getByTestId(FORM_SELECTORS.accessPasswordRadioInput)).toBeVisible();
+        this.page.getByTestId(FORM_SELECTORS.accessPasswordRadioInput).click();
+        await expect(this.page.getByTestId(FORM_SELECTORS.accessPasswordInputField)).toBeVisible();
+    };
+
+    checkAccessPasswordWorkingProperly = async () => {
+        await expect(this.page.getByTestId(FORM_SELECTORS.accessPasswordInputField)).toBeVisible();
+        this.page.getByTestId(FORM_SELECTORS.accessPasswordInputField).fill(FORM_TEXTS.passwordChecker);
+        await this.page.getByTestId(FORM_SELECTORS.saveChangeButton).click();
+        await expect(this.page.getByTestId(FORM_SELECTORS.accessPasswordInputWarning)).toBeVisible({ timeout: 3000 });
+    };
+
+    enterAccessPasswordAndSaveChange = async () => {
+        await expect(this.page.getByTestId(FORM_SELECTORS.accessPasswordInputField)).toBeVisible()
+        await this.page.getByTestId(FORM_SELECTORS.accessPasswordInputField).fill("");
+        await this.page.getByTestId(FORM_SELECTORS.accessPasswordInputField).fill(FORM_TEXTS.accessingPassword);
+        await this.page.getByTestId(FORM_SELECTORS.saveChangeButton).click();
+        await expect(this.page.getByTestId(FORM_SELECTORS.toastContainer)).toBeEnabled();
+    };
+
+    gotoShareTab = async () => {
+        await this.page.getByTestId(FORM_SELECTORS.shareTab).click();
+        await expect(this.page.getByTestId(FORM_SELECTORS.shareNeetoHeading)).toBeVisible();
+        await expect(this.page.getByTestId(FORM_SELECTORS.linkCopyButton)).toBeVisible();
+    };
+
+    copyLinkFromClipboard = async () => {
+        try {
+            this.copyLink = await this.page.evaluate("navigator.clipboard.readText()");
+            console.log("Copied Link: ", this.copyLink);
+            return this.copyLink;
+        } catch (error) {
+            console.error("Failed to read clipboard:", error);
+            return null;
+        }
+    };
+
+    setupClipboardPermissions = async (context: BrowserContext) => {
+        await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+        return async () => {
+            await context.clearPermissions();
+        }
+    };
+
+    getTheShareLink = async (context: BrowserContext) => {
+        await expect(this.page.getByTestId(FORM_SELECTORS.shareNeetoHeading)).toBeVisible();
+        const clearPermissions = await this.setupClipboardPermissions(context);
+
+        await this.page.getByTestId(FORM_SELECTORS.linkCopyButton).click()
+        await this.page.waitForTimeout(500);
+        await this.copyLinkFromClipboard();
+
+        await clearPermissions()
+    };
+
+    verifyThePasswordProtectedForm = async (passwordProtectedPage: Page) => {
+
+        await expect(this.copyLink).toBeTruthy();
+        await passwordProtectedPage.goto(this.copyLink);
+        await expect(passwordProtectedPage.getByTestId(FORM_SELECTORS.passwordProtedPageHeading)).toBeVisible();
+        await expect(passwordProtectedPage.getByTestId(FORM_SELECTORS.passwordTextField)).toBeVisible();
+        await expect(passwordProtectedPage.getByTestId(FORM_SELECTORS.continueButton)).toBeVisible();
+        await passwordProtectedPage.getByTestId(FORM_SELECTORS.passwordTextField).fill(FORM_TEXTS.accessingPassword);
+        await passwordProtectedPage.getByTestId(FORM_SELECTORS.continueButton).click();
+    };
+
+    submitAndVerifyTheResponse = async (passwordProtectedPage: Page) => {
+        await expect(passwordProtectedPage.getByTestId(FORM_SELECTORS.previewEmailTextField)).toBeVisible();
+        await passwordProtectedPage.getByTestId(FORM_SELECTORS.previewEmailTextField).fill(FORM_TEXTS.simpleEmail);
+        await passwordProtectedPage.getByTestId(FORM_SELECTORS.previewSubmitButton).click();
+        await expect(passwordProtectedPage.getByTestId(FORM_SELECTORS.previewThankYouMessage)).toBeVisible();
+    };
+
+    clickOnPreventDuplicateSubmission = async () => {
+        await expect(this.page.getByTestId(FORM_SELECTORS.preventDuplicateSubmission)).toBeVisible();
+        await this.page.getByTestId(FORM_SELECTORS.preventDuplicateSubmission).click();
+        await expect(this.page.getByTestId(FORM_SELECTORS.cookieRadio)).toBeVisible();
+    };
+
+
+    choosePreventDuplicateSubmission = async () => {
+        await this.page.getByTestId(FORM_SELECTORS.cookieRadio).click();
+        await expect(this.page.getByTestId(FORM_SELECTORS.preventDuplicateSaveChangeButton)).toBeVisible();
+        await this.page.getByTestId(FORM_SELECTORS.preventDuplicateSaveChangeButton).click()
+        await expect(this.page.getByTestId(FORM_SELECTORS.toastContainer)).toBeEnabled();
+    };
+
+    validateThatOneCannotSubmitResponseTwice = async (previewPage: Page, context: BrowserContext) => {
+        const emailInputField = previewPage.getByTestId(FORM_SELECTORS.previewEmailTextField);
+        await emailInputField.fill(FORM_TEXTS.simpleEmail);
+        await previewPage.getByTestId(FORM_SELECTORS.previewSubmitButton).click();
+        await expect(previewPage.getByTestId(FORM_SELECTORS.previewThankYouMessage)).toBeVisible();
+
+        const previewUrl = previewPage.url();
+        await previewPage.close();
+
+        const newPreviewPage = await context.newPage();
+        await newPreviewPage.goto(previewUrl);
+
+        await expect(newPreviewPage.getByTestId(FORM_SELECTORS.previewThankYouMessage)).toBeVisible();
+
+        await newPreviewPage.close();
+    };
+    openFormWithDifferentCookie = async (previewPage: Page) => {
+        await expect(this.copyLink).toBeTruthy();
+        await previewPage.goto(this.copyLink);
+        const emailInputField = previewPage.getByTestId(FORM_SELECTORS.previewEmailTextField);
+        await emailInputField.fill(FORM_TEXTS.simpleEmail);
+        await previewPage.getByTestId(FORM_SELECTORS.previewSubmitButton).click();
+        await expect(previewPage.getByTestId(FORM_SELECTORS.previewThankYouMessage)).toBeVisible();
+        previewPage.close();
+    };
+
+
+    chooseNoCheckOption = async () => {
+        await this.gotoSettingTab();
+        await expect(this.page.getByTestId(FORM_SELECTORS.preventDuplicateSubmission)).toBeVisible();
+        await this.page.getByTestId(FORM_SELECTORS.preventDuplicateSubmission).click();
+        await this.page.getByTestId(FORM_SELECTORS.noTrackRadio).click();
+        await this.page.getByTestId(FORM_SELECTORS.preventDuplicateSaveChangeButton).click()
+        await expect(this.page.getByTestId(FORM_SELECTORS.toastContainer)).toBeEnabled();
+
+    };
+
+
+    validateThatOneCanSubmitMultipleResponse = async (previewPage: Page, context: BrowserContext) => {
+        const emailInputField = await previewPage.getByTestId(FORM_SELECTORS.previewEmailTextField);
+        await emailInputField.fill(FORM_TEXTS.simpleEmail2);
+        await previewPage.getByTestId(FORM_SELECTORS.previewSubmitButton).click();
+        await expect(previewPage.getByTestId(FORM_SELECTORS.previewThankYouMessage)).toBeVisible();
+        await previewPage.close();
+
+    };
+
+
+    changeSingleChoiceFieldName = async (fieldName: string) => {
+
+        const singleChoiceComponent = this.page.getByTestId(FORM_SELECTORS.singleChoiceContainer);
+
+        await this.changeTheQuestion(singleChoiceComponent, fieldName);
+
+        await expect(this.page.getByTestId(FORM_SELECTORS.formGroupQuestion).filter({ hasText: fieldName })).toBeVisible({ timeout: 3000 });
+    }
+
+    makeSingleChoiceFirst = async (fieldName: string) => {
+        await this.page.getByTestId(FORM_SELECTORS.summaryButton).click();
+
+        const elementToDrag = await this.page.getByTestId(FORM_SELECTORS.newElementField).filter({ hasText: fieldName });
+
+        const targetElement = await this.page.getByTestId(FORM_SELECTORS.newElementField).filter({ hasText: FORM_TEXTS.emailAddress });
+
+        const dragBox = await elementToDrag.boundingBox();
+        const targetBox = await targetElement.boundingBox();
+
+        if (dragBox && targetBox) {
+            const startX = dragBox.x + dragBox.width / 2;
+            const startY = dragBox.y + dragBox.height / 2;
+
+            const endX = startX;
+            const endY = targetBox.y - 5;
+
+            await this.page.mouse.move(startX, startY);
+            await this.page.mouse.down();
+
+            await this.page.mouse.move(startX, startY - 50, { steps: 5 });
+            await this.page.mouse.move(endX, endY, { steps: 10 });
+
+            await this.page.waitForTimeout(100);
+            await this.page.mouse.up();
+
+            await this.page.waitForTimeout(500);
+        };
+
+        await this.page.getByTestId(FORM_SELECTORS.addElementButton).filter({ hasText: FORM_TEXTS.close }).click()
+    };
+
+
+    modifyAndAddYesNoOption = async (fieldName: string) => {
+
+        await this.page.getByTestId(FORM_SELECTORS.choicePreviewGroup)
+            .filter({ has: this.page.getByTestId(FORM_SELECTORS.singleChoiceContainer) })
+            .click();
+
+        await this.page.getByTestId(FORM_SELECTORS.optionInput3).hover();
+        await this.page.getByTestId(FORM_SELECTORS.deleteOptionButton3).click();
+        await this.page.getByTestId(FORM_SELECTORS.optionInput2).hover();
+        await this.page.getByTestId(FORM_SELECTORS.deleteOptionButton2).click();
+        await this.page.getByTestId(FORM_SELECTORS.optionInput0).fill(FORM_TEXTS.yes);
+        await this.page.getByTestId(FORM_SELECTORS.optionInput1).fill(FORM_TEXTS.no);
+    };
+
+    clickOnConditionalLogic = async () => {
+        await expect(this.page.getByTestId(FORM_SELECTORS.conditionalLogic)).toBeVisible();
+        await this.page.getByTestId(FORM_SELECTORS.conditionalLogic).click();
+        await expect(this.page.getByTestId(FORM_SELECTORS.conditionaLogicButton)).toBeVisible();
+        await this.page.waitForTimeout(1000)
+    }
+    addNewConditionalLogic = async () => {
+        await expect(this.page.getByTestId(FORM_SELECTORS.conditionaLogicButton)).toBeVisible();
+        await this.page.getByTestId(FORM_SELECTORS.conditionaLogicButton).click();
+
+    }
+    addCondition = async () => {
+
+        await this.page.getByTestId(FORM_SELECTORS.conditionQuestionSelectInput).click();
+        await this.page.getByText(FORM_TEXTS.interestedInPlaywright, { exact: true }).click();
+
+        await this.page.getByTestId(FORM_SELECTORS.conditionVerbSelectInput).click();
+        await this.page.getByText(FORM_TEXTS.contain, { exact: true }).click();
+        await this.page.getByTestId(FORM_SELECTORS.conditionValueSelectInput).click();
+        await this.page.getByText(FORM_TEXTS.yes, { exact: true }).click();
+
+        await this.page.getByTestId(FORM_SELECTORS.actionTypeSelectInput).click();
+        await this.page.getByText(FORM_TEXTS.show, { exact: true }).click();
+        await this.page.getByTestId(FORM_SELECTORS.actionFieldSelectInput).click();
+        await this.page.getByText(FORM_TEXTS.emailAddress, { exact: true }).click();
+    }
+
+    saveConditionalLogicChange = async () => {
+        await this.page.getByTestId(FORM_SELECTORS.saveChangeButton).click();
+    }
+
+    verifyConditionFunctionality = async (previewPage: Page) => {
+        await previewPage.getByTestId(FORM_SELECTORS.formSingleChoiceOption).filter({ hasText: FORM_TEXTS.no }).click();
+        await expect(previewPage.getByTestId(FORM_SELECTORS.previewEmailTextField)).not.toBeVisible()
+        await previewPage.getByTestId(FORM_SELECTORS.formSingleChoiceOption).filter({ hasText: FORM_TEXTS.yes }).click();
+        await expect(previewPage.getByTestId(FORM_SELECTORS.previewEmailTextField)).toBeVisible()
+    }
+
+    clickConditionLogicOptions = async () => {
+        await this.page.getByTestId(FORM_SELECTORS.conditionLogicDropdown).click();
+        await this.page.getByTestId(FORM_SELECTORS.conditionsDisableButton).click();
+    }
+
+    verifyConditionLogicIsDisabled = async (previewPage: Page) => {
+        await previewPage.getByTestId(FORM_SELECTORS.formSingleChoiceOption).filter({ hasText: FORM_TEXTS.no }).click();
+        await expect(previewPage.getByTestId(FORM_SELECTORS.previewEmailTextField)).toBeVisible()
+        await previewPage.getByTestId(FORM_SELECTORS.formSingleChoiceOption).filter({ hasText: FORM_TEXTS.yes }).click();
+        await expect(previewPage.getByTestId(FORM_SELECTORS.previewEmailTextField)).toBeVisible()
+    }
 };
+
+
+

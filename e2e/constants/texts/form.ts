@@ -4,10 +4,22 @@ export const FORM_TEXTS = {
     falseEmail: "soumya",
     unUseNumber: "1",
     simpleEmail: "soumya@example.com",
+    passwordChecker: "qwe",
+    simpleEmail2: "sanat@example.com",
+    accessingPassword: "123456",
+
+    emailAddress: 'Email address',
+
+    close: 'Close',
+    yes: "Yes",
+    no: "No",
 
 
+    interestedInPlaywright: 'Interested in Playwright?',
     // Success messages
     theFormPublishedSuccessfully: "The form is successfully published",
+    contain: 'contain',
+    show: 'Show',
 
     // Field labels
     singleDemoFieldName: "Single - demo field name",
